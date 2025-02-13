@@ -25,6 +25,9 @@ NAME_FEATURES = ['Cell name', 'Resting membrane potential (mV)', 'Input resistan
                      'AP Fano factor', 'AP coefficient of variation', 'Burstiness', 'Wildness', 'Rebound number of APs', \
                     'Access resistance initial', 'Access resistance end', 'Membrane resistance initial', 'Membrane resistance end']
 
+
+#Test comment to push 
+
 ### METHODS ###
 """
 Helper methods used by the main method
