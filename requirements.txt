@@ -1,0 +1,9 @@
+python -m pip install pandas
+python -m pip install numpy
+python -m pip install seaborn
+python -m pip install matplotlib
+python -m pip install scipy
+python -m pip install glob
+python -m pip install pyabf
+python -m pip install pynwb
+python -m pip install scikit-learn
