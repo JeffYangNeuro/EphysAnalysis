@@ -75,6 +75,8 @@ class EphysFile:
         if len(values) != 6:
             raise ValueError('Filename is incorrectly named and will be challenging to match.')
         
+
+        ### HERE TO EDIT IF WE WANT TO ADD MORE VALUES TO CORRELATE (gender, age)
         self.date = values[0]
         self.region = values[1]
         self.sliceNumber = values[2]
