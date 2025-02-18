@@ -7,3 +7,4 @@ python -m pip install glob
 python -m pip install pyabf
 python -m pip install pynwb
 python -m pip install scikit-learn
+python -m pip install tk
