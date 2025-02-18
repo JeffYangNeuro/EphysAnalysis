@@ -14,6 +14,7 @@ import ABFFileClass as file_wrapper
 Order of all features to be extracted PER cell in order that they will appear
 during and after analysis
 """
+
 NAME_FEATURES = ['Cell name', 'Resting membrane potential (mV)', 'Input resistance (MOhm)', 'Membrane time constant (ms)', \
                      'Cell Capacitance (pF)', 'AP threshold (mV)', 'AP amplitude (mV)', 'AP width (ms)', \
                      'Upstroke-to-downstroke ratio', 'Afterhyperpolarization (mV)', 'Afterdepolarization (mV)',
@@ -23,7 +24,7 @@ NAME_FEATURES = ['Cell name', 'Resting membrane potential (mV)', 'Input resistan
                      'ISI average adaptation index', 'Rebound (mV)', 'Sag time (s)', 'Sag area (mV*s)', \
                      'AP amplitude adaptation index', 'AP amplitude average adaptation index', \
                      'AP Fano factor', 'AP coefficient of variation', 'Burstiness', 'Wildness', 'Rebound number of APs', \
-                    'Access resistance initial', 'Access resistance end', 'Membrane resistance initial', 'Membrane resistance end']
+                    'Access resistance MT1', 'Access resistance MT2', 'Membrane resistance MT1', 'Membrane resistance MT2']
 
 
 #Test comment to push 
@@ -120,9 +121,9 @@ def analyze_all_cells(ephys_files, plot_MT):
         features_all.append(features)
 
     Cell_Features = pd.DataFrame(features_all, columns = NAME_FEATURES)
-    Cell_Features['QC Access/Input initial'] = Cell_Features['Access resistance initial']/Cell_Features['Membrane resistance initial']
-    Cell_Features['QC Access/Input end'] = Cell_Features['Access resistance end']/Cell_Features['Membrane resistance end']
-    Cell_Features['QC Access End/Access Initial'] = Cell_Features['Access resistance end']/Cell_Features['Access resistance initial']
+    Cell_Features['Access/Input Percentage MT1'] = Cell_Features['Access resistance MT1']/Cell_Features['Membrane resistance MT1'] * 100
+    Cell_Features['Access/Input Percentage MT2'] = Cell_Features['Access resistance MT2']/Cell_Features['Membrane resistance MT2'] * 100
+    Cell_Features['Access Resistance Percent Change'] = (Cell_Features['Access resistance MT2'] - Cell_Features['Access resistance MT1']) * 100 /Cell_Features['Access resistance MT1']
     return Cell_Features
 
 def export_to_CSV(csv_name, folder_path, Cell_Features):
