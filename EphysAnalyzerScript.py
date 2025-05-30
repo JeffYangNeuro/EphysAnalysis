@@ -24,7 +24,8 @@ NAME_FEATURES = ['Cell name', 'Resting membrane potential (mV)', 'Input resistan
                      'ISI average adaptation index', 'Rebound (mV)', 'Sag time (s)', 'Sag area (mV*s)', \
                      'AP amplitude adaptation index', 'AP amplitude average adaptation index', \
                      'AP Fano factor', 'AP coefficient of variation', 'Burstiness', 'Wildness', 'Rebound number of APs', \
-                    'Access resistance MT1', 'Access resistance MT2', 'Membrane resistance MT1', 'Membrane resistance MT2']
+                     'Access resistance MT1', 'Access resistance MT2', 'Membrane resistance MT1', 'Membrane resistance MT2', \
+                     'Access/Input Percentage MT1', 'Access/Input Percentage MT2', 'Access Resistance Percent Change']
 
 
 #Test comment to push 
@@ -85,18 +86,26 @@ def analyze_all_cells(ephys_files, plot_MT):
         print(f'{counter}/{num_files} cells \t Currently analyzing cell {current_cell}')
         abf_files = all_files[current_cell]
         features = []
-        access_resistance_end = -1
-        access_resistance_initial = -1
         
+        access_resistance_initial = -1 #Setting these values to be negative in case there is no MT1 or MT2 File
+        access_resistance_end = -1
+        membrane_resistance_initial = -1
+        membrane_resistance_end = -1 
+
+        has_MT1 = False
+        has_MT2 = False
         for current_abf in abf_files:
+
             if current_abf.getRecordingMethod() == 'APF':
                 time, current, voltage, current_traces, curr_index_0 = current_abf.getABFSortedData()
                 df, df_related_features = current_abf.extract_spike_features(time, current, voltage, current_traces, .11716, .71716)
-                features, x = current_abf.get_cell_features(df, df_related_features, time, current, voltage, curr_index_0, start = .11716, end = .71716, cell_name = current_cell)
-                features.insert(0, current_cell)
+                features_cell, x = current_abf.get_cell_features(df, df_related_features, time, current, voltage, curr_index_0, start = .11716, end = .71716, cell_name = current_cell)
+                features_cell.insert(0, current_cell)
+                features = features_cell + features
                 print(f'APF data for cell {current_cell} analyzed')
                 
             elif current_abf.getRecordingMethod() == 'MT1':
+                has_MT1 = True
                 memtest = current_abf.get_membrane_test(current_abf.getABFRawData())
                 access_resistance_initial = current_abf.get_access_resistance(memtest)
                 membrane_resistance_initial = current_abf.get_membrane_resistance(memtest)
@@ -105,6 +114,7 @@ def analyze_all_cells(ephys_files, plot_MT):
                 print(f'MT1 data for cell {current_cell} analyzed')
 
             elif current_abf.getRecordingMethod() == 'MT2': 
+                has_MT2 = True
                 memtest = current_abf.get_membrane_test(current_abf.getABFRawData())
                 access_resistance_end = current_abf.get_access_resistance(memtest)
                 membrane_resistance_end = current_abf.get_membrane_resistance(memtest)
@@ -118,12 +128,24 @@ def analyze_all_cells(ephys_files, plot_MT):
         features.append(access_resistance_end)
         features.append(membrane_resistance_initial)
         features.append(membrane_resistance_end)
+
+        if has_MT1:
+            features.append((access_resistance_initial/membrane_resistance_initial) * 100)
+        else:
+            features.append(-1)
+        
+        if has_MT2: 
+            features.append((access_resistance_end/membrane_resistance_end) * 100)
+        else:
+            features.append(-1)
+        
+        if has_MT1 and has_MT2:
+            features.append((access_resistance_end - access_resistance_initial) * 100 /access_resistance_initial)
+        else:
+            features.append(-1)
         features_all.append(features)
 
     Cell_Features = pd.DataFrame(features_all, columns = NAME_FEATURES)
-    Cell_Features['Access/Input Percentage MT1'] = Cell_Features['Access resistance MT1']/Cell_Features['Membrane resistance MT1'] * 100
-    Cell_Features['Access/Input Percentage MT2'] = Cell_Features['Access resistance MT2']/Cell_Features['Membrane resistance MT2'] * 100
-    Cell_Features['Access Resistance Percent Change'] = (Cell_Features['Access resistance MT2'] - Cell_Features['Access resistance MT1']) * 100 /Cell_Features['Access resistance MT1']
     return Cell_Features
 
 def export_to_CSV(csv_name, folder_path, Cell_Features):
